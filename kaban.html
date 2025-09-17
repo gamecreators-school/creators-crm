@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban - Sistema CRM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            background: rgba(255,255,255,0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .filters {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .filter-group label {
+            font-weight: 500;
+            color: #555;
+        }
+        
+        select, input {
+            padding: 0.5rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .stats-bar {
+            background: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e1e5e9;
+            font-size: 0.9rem;
+        }
+        
+        .stats-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .stats-number {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .kanban-container {
+            padding: 2rem;
+            height: calc(100vh - 240px);
+            overflow: hidden;
+        }
+        
+        .kanban-board {
+            display: flex;
+            gap: 1.5rem;
+            height: 100%;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+        
+        .kanban-column {
+            flex: 0 0 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
+            transition: all 0.3s ease;
+        }
+        
+        .kanban-column:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        .column-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .column-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .column-count {
+            background: #e9ecef;
+            color: #495057;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        /* Cores específicas por status */
+        .column-novo .column-header { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); }
+        .column-novo .column-count { background: #1976d2; color: white; }
+        
+        .column-contato .column-header { background: linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%); }
+        .column-contato .column-count { background: #f57c00; color: white; }
+        
+        .column-agendado .column-header { background: linear-gradient(135deg, #e8f5e8 0%, #a5d6a7 100%); }
+        .column-agendado .column-count { background: #388e3c; color: white; }
+        
+        .column-compareceu .column-header { background: linear-gradient(135deg, #e1f5fe 0%, #81d4fa 100%); }
+        .column-compareceu .column-count { background: #0277bd; color: white; }
+        
+        .column-matricula .column-header { background: linear-gradient(135deg, #f3e5f5 0%, #ce93d8 100%); }
+        .column-matricula .column-count { background: #7b1fa2; color: white; }
+        
+        .column-perdido .column-header { background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); }
+        .column-perdido .column-count { background: #d32f2f; color: white; }
+        
+        .column-content {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            min-height: 400px;
+        }
+        
+        .lead-card {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .lead-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        
+        .lead-card.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+        
+        .lead-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .lead-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .lead-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .lead-phone {
+            color: #28a745;
+        }
+        
+        .lead-email {
+            color: #17a2b8;
+        }
+        
+        .lead-curso {
+            color: #ffc107;
+        }
+        
+        .lead-responsavel {
+            color: #6f42c1;
+            font-weight: 500;
+        }
+        
+        .lead-date {
+            color: #6c757d;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+        
+        .column-drop-zone {
+            min-height: 50px;
+            border: 2px dashed transparent;
+            border-radius: 8px;
+            margin: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .column-drop-zone.drag-over {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .empty-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .empty-column-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+        
+        .lead-actions {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .lead-card:hover .lead-actions {
+            opacity: 1;
+        }
+        
+        .action-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 0.25rem;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .action-edit {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .action-delete {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .floating-add {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(40, 167, 69, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .floating-add:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(40, 167, 69, 0.6);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        @media (max-width: 768px) {
+            .kanban-board {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .kanban-column {
+                flex: none;
+                margin-bottom: 1rem;
+            }
+            
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Kanban de Leads</h1>
+        <div class="header-controls">
+            <div class="user-info">
+                <?= user.nome ?> | <?= user.funcao ?> | <?= user.unidade ?>
+            </div>
+            <button class="btn btn-secondary" onclick="closePage()">🏠 Voltar</button>
+        </div>
+    </div>
+    
+    <div class="filters">
+        <div class="filter-group">
+            <label>📍 Unidade:</label>
+            <select id="filterUnidade" onchange="applyFilters()">
+                <option value="">Todas</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>👤 Responsável:</label>
+            <select id="filterResponsavel" onchange="applyFilters()">
+                <option value="">Todos</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label>📅 Período:</label>
+            <input type="date" id="filterDataInicio" onchange="applyFilters()">
+            <input type="date" id="filterDataFim" onchange="applyFilters()">
+        </div>
+        
+        <div class="filter-group">
+            <label>🔍 Buscar:</label>
+            <input type="text" id="filterBusca" placeholder="Nome ou telefone..." onkeyup="applyFilters()">
+        </div>
+        
+        <button class="btn btn-info" onclick="resetFilters()">🔄 Limpar Filtros</button>
+        <button class="btn btn-success" onclick="exportData()">📊 Exportar</button>
+    </div>
+    
+    <div class="stats-bar">
+        <div class="stats-item">
+            <span>📊 Total de Leads:</span>
+            <span class="stats-number" id="totalLeads">0</span>
+        </div>
+        <div class="stats-item">
+            <span>📈 Taxa de Conversão:</span>
+            <span class="stats-number" id="taxaConversao">0%</span>
+        </div>
+        <div class="stats-item">
+            <span>🎯 Meta Mensal:</span>
+            <span class="stats-number">100</span>
+        </div>
+        <div class="stats-item">
+            <span>⏱️ Última Atualização:</span>
+            <span id="lastUpdate">-</span>
+        </div>
+    </div>
+    
+    <div class="kanban-container">
+        <div class="kanban-board" id="kanbanBoard">
+            <!-- Colunas serão geradas dinamicamente -->
+        </div>
+    </div>
+    
+    <button class="floating-add" onclick="openNewLeadModal()" title="Adicionar Novo Lead">➕</button>
+    
+    <!-- Modal para Novo Lead -->
+    <div class="modal" id="leadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">➕ Novo Lead</h3>
+                <button class="close-btn" onclick="closeModal('leadModal')">&times;</button>
+            </div>
+            
+            <form id="leadForm">
+                <div class="form-group">
+                    <label>Nome *</label>
+                    <input type="text" id="leadNome" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Telefone *</label>
+                    <input type="tel" id="leadTelefone" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="leadEmail">
+                </div>
+                
+                <div class="form-group">
+                    <label>Curso de Interesse</label>
+                    <select id="leadCurso">
+                        <option value="">Selecione...</option>
+                        <option value="Programação">Programação</option>
+                        <option value="Design">Design</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Vendas">Vendas</option>
+                        <option value="Gestão">Gestão</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Unidade</label>
+                    <select id="leadUnidade" required>
+                        <option value="">Selecione...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Responsável</label>
+                    <select id="leadResponsavel">
+                        <option value="">Atribuir automaticamente</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea id="leadObservacoes" placeholder="Informações adicionais..."></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('leadModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-success">💾 Salvar Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = <?= JSON.stringify(user) ?>;
+        let allLeads = [];
+        let filteredLeads = [];
+        let draggedLead = null;
+        
+        const statusColumns = [
+            { id: 'novo', title: 'Novo', icon: '🆕' },
+            { id: 'contato', title: 'Em Contato', icon: '📞' },
+            { id: 'agendado', title: 'Agendado', icon: '📅' },
+            { id: 'compareceu', title: 'Compareceu', icon: '✅' },
+            { id: 'matricula', title: 'Matrícula', icon: '🎓' },
+            { id: 'perdido', title: 'Perdido', icon: '❌' }
+        ];
+        
+        window.onload = function() {
+            initializeKanban();
+            loadData();
+            setupEventListeners();
+        };
+        
+        function initializeKanban() {
+            const kanbanBoard = document.getElementById('kanbanBoard');
+            
+            statusColumns.forEach(column => {
+                const columnElement = createColumnElement(column);
+                kanbanBoard.appendChild(columnElement);
+            });
+        }
+        
+        function createColumnElement(column) {
+            const columnDiv = document.createElement('div');
+            columnDiv.className = `kanban-column column-${column.id}`;
+            columnDiv.innerHTML = `
+                <div class="column-header">
+                    <div class="column-title">
+                        <span>${column.icon}</span>
+                        <span>${column.title}</span>
+                    </div>
+                    <span class="column-count" id="count-${column.id}">0</span>
+                </div>
+                <div class="column-content" id="column-${column.id}" ondrop="dropLead(event, '${column.id}')" ondragover="allowDrop(event)">
+                    <div class="column-drop-zone" id="dropzone-${column.id}"></div>
+                </div>
+            `;
+            
+            return columnDiv;
+        }
+        
+        function loadData() {
+            // Carregar leads
+            google.script.run
+                .withSuccessHandler(function(leads) {
+                    allLeads = leads || [];
+                    applyFilters();
+                    updateStatistics();
+                    updateLastUpdate();
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Erro ao carregar leads:', error);
+                    alert('❌ Erro ao carregar dados: ' + error.message);
+                })
+                .getLeads();
+                
+            // Carregar filtros
+            loadFilterOptions();
+        }
+        
+        function loadFilterOptions() {
+            // Carregar unidades
+            google.script.run
+                .withSuccessHandler(function(unidades) {
+                    const filterUnidade = document.getElementById('filterUnidade');
+                    const leadUnidade = document.getElementById('leadUnidade');
+                    
+                    unidades.forEach(unidade => {
+                        const option1 = new Option(unidade, unidade);
+                        const option2 = new Option(unidade, unidade);
+                        filterUnidade.add(option1);
+                        leadUnidade.add(option2);
+                    });
+                    
+                    // Pré-selecionar unidade do usuário se não for admin
+                    if (currentUser.funcao !== 'ADMIN') {
+                        filterUnidade.value = currentUser.unidade;
+                        leadUnidade.value = currentUser.unidade;
+                        leadUnidade.disabled = true;
+                    }
+                })
+                .getUnidades();
+                
+            // Carregar responsáveis
+            google.script.run
+                .withSuccessHandler(function(responsaveis) {
+                    const filterResponsavel = document.getElementById('filterResponsavel');
+                    const leadResponsavel = document.getElementById('leadResponsavel');
+                    
+                    responsaveis.forEach(responsavel => {
+                        const option1 = new Option(responsavel, responsavel);
+                        const option2 = new Option(responsavel, responsavel);
+                        filterResponsavel.add(option1);
+                        leadResponsavel.add(option2);
+                    });
+                })
+                .getResponsaveis();
+        }
+        
+        function applyFilters() {
+            const filterUnidade = document.getElementById('filterUnidade').value;
+            const filterResponsavel = document.getElementById('filterResponsavel').value;
+            const filterDataInicio = document.getElementById('filterDataInicio').value;
+            const filterDataFim = document.getElementById('filterDataFim').value;
+            const filterBusca = document.getElementById('filterBusca').value.toLowerCase();
+            
+            filteredLeads = allLeads.filter(lead => {
+                // Filtro de unidade
+                if (filterUnidade && lead.Unidade !== filterUnidade) return false;
+                
+                // Filtro de responsável
+                if (filterResponsavel && lead.Responsável !== filterResponsavel) return false;
+                
+                // Filtro de data
+                if (filterDataInicio && new Date(lead['Data Cadastro']) < new Date(filterDataInicio)) return false;
+                if (filterDataFim && new Date(lead['Data Cadastro']) > new Date(filterDataFim)) return false;
+                
+                // Filtro de busca
+                if (filterBusca && !lead.Nome.toLowerCase().includes(filterBusca) && !lead.Telefone.includes(filterBusca)) return false;
+                
+                return true;
+            });
+            
+            renderKanban();
+        }
+        
+        function renderKanban() {
+            // Limpar todas as colunas
+            statusColumns.forEach(column => {
+                const columnContent = document.getElementById(`column-${column.id}`);
+                columnContent.innerHTML = '<div class="column-drop-zone" id="dropzone-' + column.id + '"></div>';
+            });
+            
+            // Agrupar leads por status
+            const leadsByStatus = {};
+            statusColumns.forEach(column => {
+                leadsByStatus[column.id] = [];
+            });
+            
+            filteredLeads.forEach(lead => {
+                const status = normalizeStatus(lead.Status);
+                if (leadsByStatus[status]) {
+                    leadsByStatus[status].push(lead);
+                }
+            });
+            
+            // Renderizar leads em cada coluna
+            statusColumns.forEach(column => {
+                const leads = leadsByStatus[column.id] || [];
+                const columnContent = document.getElementById(`column-${column.id}`);
+                const countElement = document.getElementById(`count-${column.id}`);
+                
+                countElement.textContent = leads.length;
+                
+                if (leads.length === 0) {
+                    columnContent.innerHTML = `
+                        <div class="column-drop-zone" id="dropzone-${column.id}"></div>
+                        <div class="empty-column">
+                            <div class="empty-column-icon">${column.icon}</div>
+                            <p>Nenhum lead neste status</p>
+                        </div>
+                    `;
+                } else {
+                    const dropZone = `<div class="column-drop-zone" id="dropzone-${column.id}"></div>`;
+                    const leadCards = leads.map(lead => createLeadCard(lead)).join('');
+                    columnContent.innerHTML = dropZone + leadCards;
+                }
+            });
+        }
+        
+        function normalizeStatus(status) {
+            const statusMap = {
+                'Novo': 'novo',
+                'Em contato': 'contato',
+                'Agendado': 'agendado',
+                'Compareceu': 'compareceu',
+                'Matrícula': 'matricula',
+                'Não Compareceu': 'perdido',
+                'Reagendado': 'agendado',
+                'Perdido': 'perdido'
+            };
+            
+            return statusMap[status] || 'novo';
+        }
+        
+        function createLeadCard(lead) {
+            return `
+                <div class="lead-card" draggable="true" ondragstart="dragStart(event, '${lead.ID}')" onclick="editLead('${lead.ID}')">
+                    <div class="lead-actions">
+                        <button class="action-btn action-edit" onclick="event.stopPropagation(); editLead('${lead.ID}')" title="Editar">✏️</button>
+                        <button class="action-btn action-delete" onclick="event.stopPropagation(); deleteLead('${lead.ID}')" title="Excluir">🗑️</button>
+                    </div>
+                    
+                    <div class="lead-name">${lead.Nome}</div>
+                    
+                    <div class="lead-info">
+                        <div class="lead-info-item">
+                            <span>📞</span>
+                            <span class="lead-phone">${lead.Telefone}</span>
+                        </div>
+                        ${lead.Email ? `
+                        <div class="lead-info-item">
+                            <span>📧</span>
+                            <span class="lead-email">${lead.Email}</span>
+                        </div>
+                        ` : ''}
+                        ${lead.Curso ? `
+                        <div class="lead-info-item">
+                            <span>📚</span>
+                            <span class="lead-curso">${lead.Curso}</span>
+                        </div>
+                        ` : ''}
+                        ${lead.Responsável ? `
+                        <div class="lead-info-item">
+                            <span>👤</span>
+                            <span class="lead-responsavel">${lead.Responsável}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="lead-date">
+                        ${formatDate(lead['Data Cadastro'])}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit'
+            });
+        }
+        
+        function updateStatistics() {
+            const total = filteredLeads.length;
+            const matriculas = filteredLeads.filter(l => l.Status === 'Matrícula').length;
+            const taxa = total > 0 ? Math.round((matriculas / total) * 100) : 0;
+            
+            document.getElementById('totalLeads').textContent = total;
+            document.getElementById('taxaConversao').textContent = taxa + '%';
+        }
+        
+        function updateLastUpdate() {
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('pt-BR');
+        }
+        
+        // Drag and Drop
+        function dragStart(event, leadId) {
+            draggedLead = leadId;
+            event.dataTransfer.effectAllowed = 'move';
+            event.target.classList.add('dragging');
+        }
+        
+        function allowDrop(event) {
+            event.preventDefault();
+            const dropZone = event.target.closest('.column-drop-zone');
+            if (dropZone) {
+                dropZone.classList.add('drag-over');
+            }
+        }
+        
+        function dropLead(event, newStatus) {
+            event.preventDefault();
+            
+            if (!draggedLead) return;
+            
+            const dropZones = document.querySelectorAll('.column-drop-zone');
+            dropZones.forEach(zone => zone.classList.remove('drag-over'));
+            
+            // Encontrar o status correspondente
+            const statusMap = {
+                'novo': 'Novo',
+                'contato': 'Em contato',
+                'agendado': 'Agendado',
+                'compareceu': 'Compareceu',
+                'matricula': 'Matrícula',
+                'perdido': 'Perdido'
+            };
+            
+            const newStatusText = statusMap[newStatus];
+            
+            // Atualizar status do lead
+            google.script.run
+                .withSuccessHandler(function(success) {
+                    if (success) {
+                        // Atualizar dados locais
+                        const lead = allLeads.find(l => l.ID === draggedLead);
+                        if (lead) {
+                            lead.Status = newStatusText;
+                            lead['Data Última Ação'] = new Date();
+                        }
+                        
+                        applyFilters();
+                        updateStatistics();
+                        showNotification(`✅ Status atualizado para: ${newStatusText}`);
+                    } else {
+                        showNotification('❌ Erro ao atualizar status');
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showNotification('❌ Erro: ' + error.message);
+                })
+                .updateLeadStatus(draggedLead, newStatusText);
+                
+            draggedLead = null;
+            
+            // Remover classe de arrastar
+            const draggingCards = document.querySelectorAll('.lead-card.dragging');
+            draggingCards.forEach(card => card.classList.remove('dragging'));
+        }
+        
+        // Funções de Modal
+        function openNewLeadModal() {
+            document.getElementById('leadModal').style.display = 'flex';
+            document.getElementById('leadForm').reset();
+            document.getElementById('modalTitle').textContent = '➕ Novo Lead';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function setupEventListeners() {
+            // Form submit
+            document.getElementById('leadForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveLead();
+            });
+            
+            // Fechar modal ao clicar fora
+            document.getElementById('leadModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal('leadModal');
+                }
+            });
+        }
+        
+        function saveLead() {
+            const leadData = {
+                nome: document.getElementById('leadNome').value,
+                telefone: document.getElementById('leadTelefone').value,
+                email: document.getElementById('leadEmail').value,
+                curso: document.getElementById('leadCurso').value,
+                unidade: document.getElementById('leadUnidade').value || currentUser.unidade,
+                responsavel: document.getElementById('leadResponsavel').value || currentUser.nome,
+                observacoes: document.getElementById('leadObservacoes').value,
+                origem: 'Kanban'
+            };
+            
+            google.script.run
+                .withSuccessHandler(function(leadId) {
+                    showNotification('✅ Lead criado com sucesso! ID: ' + leadId);
+                    closeModal('leadModal');
+                    loadData(); // Recarregar dados
+                })
+                .withFailureHandler(function(error) {
+                    showNotification('❌ Erro ao criar lead: ' + error.message);
+                })
+                .createLead(leadData);
+        }
+        
+        function editLead(leadId) {
+            // Por enquanto, mostrar informações do lead
+            const lead = allLeads.find(l => l.ID === leadId);
+            if (lead) {
+                alert(`📋 Lead: ${lead.Nome}
+📞 Telefone: ${lead.Telefone}
+📧 Email: ${lead.Email || 'Não informado'}
+📚 Curso: ${lead.Curso || 'Não informado'}
+🏢 Unidade: ${lead.Unidade}
+👤 Responsável: ${lead.Responsável || 'Não atribuído'}
+📊 Status: ${lead.Status}
+📅 Cadastro: ${formatDate(lead['Data Cadastro'])}
+
+💡 Funcionalidade de edição completa será implementada em breve.`);
+            }
+        }
+        
+        function deleteLead(leadId) {
+            if (confirm('⚠️ Tem certeza que deseja excluir este lead?')) {
+                // Implementar exclusão
+                alert('🚧 Funcionalidade de exclusão será implementada em breve.');
+            }
+        }
+        
+        function resetFilters() {
+            document.getElementById('filterUnidade').value = '';
+            document.getElementById('filterResponsavel').value = '';
+            document.getElementById('filterDataInicio').value = '';
+            document.getElementById('filterDataFim').value = '';
+            document.getElementById('filterBusca').value = '';
+            applyFilters();
+        }
+        
+        function exportData() {
+            alert('🚧 Funcionalidade de exportação será implementada em breve.');
+        }
+        
+        function closePage() {
+            google.script.host.close();
+        }
+        
+        function showNotification(message) {
+            // Criar notificação temporária
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 1rem;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 3000;
+                max-width: 300px;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Remover após 3 segundos
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Auto-refresh a cada 2 minutos
+        setInterval(() => {
+            loadData();
+        }, 2 * 60 * 1000);
+    </script>
+</body>
+</html>
