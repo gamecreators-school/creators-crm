@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Usuários - Sistema CRM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            background: rgba(255,255,255,0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .actions-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+        
+        .search-input {
+            flex: 1;
+            max-width: 300px;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .users-table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .table-header h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .table-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .users-table th,
+        .users-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .users-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            position: sticky;
+            top: 0;
+        }
+        
+        .users-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-right: 1rem;
+        }
+        
+        .user-info-cell {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-details h4 {
+            margin-bottom: 0.25rem;
+            color: #333;
+        }
+        
+        .user-details p {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-ativo {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-inativo {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-pendente {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .funcao-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .funcao-admin {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        .funcao-gerente {
+            background: #e1f5fe;
+            color: #0277bd;
+        }
+        
+        .funcao-assistente {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+        
+        .actions-cell {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .permission-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .permission-item input[type="checkbox"] {
+            width: auto;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .actions-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .search-input {
+                max-width: none;
+            }
+            
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .users-table {
+                font-size: 0.85rem;
+            }
+            
+            .actions-cell {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👥 Gerenciar Usuários</h1>
+        <div class="header-controls">
+            <div class="user-info">
+                <?= user.nome ?> | <?= user.funcao ?>
+            </div>
+            <button class="btn btn-secondary" onclick="closePage()">🏠 Voltar</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Barra de Ações -->
+        <div class="actions-bar">
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="🔍 Buscar usuário..." id="searchInput" onkeyup="filterUsers()">
+                <select id="filterFuncao" onchange="filterUsers()">
+                    <option value="">Todas as funções</option>
+                    <option value="ADMIN">Administrador</option>
+                    <option value="GERENTE">Gerente</option>
+                    <option value="ASSISTENTE">Assistente</option>
+                </select>
+                <select id="filterStatus" onchange="filterUsers()">
+                    <option value="">Todos os status</option>
+                    <option value="Ativo">Ativo</option>
+                    <option value="Inativo">Inativo</option>
+                    <option value="Pendente">Pendente</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-success" onclick="openNewUserModal()">➕ Novo Usuário</button>
+                <button class="btn btn-info" onclick="exportUsers()">📊 Exportar</button>
+                <button class="btn btn-secondary" onclick="refreshUsers()">🔄 Atualizar</button>
+            </div>
+        </div>
+        
+        <!-- Estatísticas -->
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-number" id="totalUsers">0</div>
+                <div class="stat-label">Total de Usuários</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeUsers">0</div>
+                <div class="stat-label">Usuários Ativos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="adminUsers">0</div>
+                <div class="stat-label">Administradores</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="lastLogin">-</div>
+                <div class="stat-label">Último Acesso</div>
+            </div>
+        </div>
+        
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Carregando usuários...</p>
+        </div>
+        
+        <!-- Tabela de Usuários -->
+        <div class="users-table-container" id="usersTableContainer">
+            <div class="table-header">
+                <h3>👥 Lista de Usuários</h3>
+                <p>Gerencie usuários, permissões e acessos ao sistema</p>
+            </div>
+            
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Usuário</th>
+                        <th>Função</th>
+                        <th>Unidade</th>
+                        <th>Status</th>
+                        <th>Último Acesso</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <!-- Será preenchido dinamicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Modal para Novo/Editar Usuário -->
+    <div class="modal" id="userModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">➕ Novo Usuário</h3>
+                <button class="close-btn" onclick="closeModal('userModal')">&times;</button>
+            </div>
+            
+            <form id="userForm">
+                <input type="hidden" id="userId">
+                
+                <div class="form-group">
+                    <label>Nome Completo *</label>
+                    <input type="text" id="userName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Google *</label>
+                    <input type="email" id="userEmail" required>
+                    <small style="color: #666; font-size: 0.8rem;">Use o email da conta Google do usuário</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Função *</label>
+                    <select id="userFuncao" required onchange="updatePermissions()">
+                        <option value="">Selecione a função</option>
+                        <option value="ADMIN">Administrador</option>
+                        <option value="GERENTE">Gerente</option>
+                        <option value="ASSISTENTE">Assistente</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Unidade *</label>
+                    <select id="userUnidade" required>
+                        <option value="">Selecione a unidade</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="userStatus">
+                        <option value="Ativo">Ativo</option>
+                        <option value="Inativo">Inativo</option>
+                        <option value="Pendente">Pendente</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Permissões</label>
+                    <div class="permissions-grid" id="permissionsGrid">
+                        <!-- Será preenchido dinamicamente -->
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('userModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-success">💾 Salvar Usuário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal de Confirmação -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">⚠️ Confirmação</h3>
+                <button class="close-btn" onclick="closeModal('confirmModal')">&times;</button>
+            </div>
+            
+            <p id="confirmMessage">Tem certeza que deseja realizar esta ação?</p>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmButton">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = <?= JSON.stringify(user) ?>;
+        const unidades = <?= JSON.stringify(unidades) ?>;
+        let allUsers = [];
+        let filteredUsers = [];
+        
+        const availablePermissions = [
+            { key: 'VER_LEADS', label: 'Ver Leads' },
+            { key: 'EDITAR_LEADS', label: 'Editar Leads' },
+            { key: 'ATRIBUIR_LEADS', label: 'Atribuir Leads' },
+            { key: 'GERAR_RELATORIOS', label: 'Gerar Relatórios' },
+            { key: 'CRIAR_USUARIO', label: 'Criar Usuário' },
+            { key: 'IMPORTAR_LEADS', label: 'Importar Leads' },
+            { key: 'VER_TODOS_LEADS', label: 'Ver Todos os Leads' }
+        ];
+        
+        const defaultPermissions = {
+            'ADMIN': ['VER_LEADS', 'EDITAR_LEADS', 'ATRIBUIR_LEADS', 'GERAR_RELATORIOS', 'CRIAR_USUARIO', 'IMPORTAR_LEADS', 'VER_TODOS_LEADS'],
+            'GERENTE': ['VER_LEADS', 'EDITAR_LEADS', 'ATRIBUIR_LEADS', 'GERAR_RELATORIOS'],
+            'ASSISTENTE': ['VER_LEADS', 'EDITAR_LEADS']
+        };
+        
+        window.onload = function() {
+            initializePage();
+            loadUsers();
+            setupEventListeners();
+        };
+        
+        function initializePage() {
+            // Carregar unidades no select
+            const userUnidadeSelect = document.getElementById('userUnidade');
+            unidades.forEach(unidade => {
+                const option = new Option(unidade, unidade);
+                userUnidadeSelect.add(option);
+            });
+            
+            // Configurar permissões
+            setupPermissionsGrid();
+        }
+        
+        function setupPermissionsGrid() {
+            const grid = document.getElementById('permissionsGrid');
+            
+            availablePermissions.forEach(permission => {
+                const item = document.createElement('div');
+                item.className = 'permission-item';
+                item.innerHTML = `
+                    <input type="checkbox" id="perm_${permission.key}" value="${permission.key}">
+                    <label for="perm_${permission.key}">${permission.label}</label>
+                `;
+                grid.appendChild(item);
+            });
+        }
+        
+        function loadUsers() {
+            showLoading(true);
+            
+            google.script.run
+                .withSuccessHandler(function(users) {
+                    allUsers = users || [];
+                    filteredUsers = [...allUsers];
+                    renderUsersTable();
+                    updateStatistics();
+                    showLoading(false);
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Erro ao carregar usuários:', error);
+                    showError('Erro ao carregar usuários: ' + error.message);
+                    showLoading(false);
+                })
+                .getAllUsers();
+        }
+        
+        function renderUsersTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            
+            if (filteredUsers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-state-icon">👥</div>
+                            <p>Nenhum usuário encontrado</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            filteredUsers.forEach(user => {
+                const row = document.createElement('tr');
+                const initials = user['Nome Completo'] ? user['Nome Completo'].split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : '??';
+                const lastLogin = user['Último Acesso'] ? formatDate(user['Último Acesso']) : 'Nunca';
+                
+                row.innerHTML = `
+                    <td>
+                        <div class="user-info-cell">
+                            <div class="user-avatar">${initials}</div>
+                            <div class="user-details">
+                                <h4>${user['Nome Completo']}</h4>
+                                <p>${user.Email}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="funcao-badge funcao-${user.Função?.toLowerCase()}">${user.Função}</span>
+                    </td>
+                    <td>${user.Unidade}</td>
+                    <td>
+                        <span class="status-badge status-${user.Status?.toLowerCase()}">${user.Status}</span>
+                    </td>
+                    <td>${lastLogin}</td>
+                    <td>
+                        <div class="actions-cell">
+                            <button class="btn btn-info btn-small" onclick="editUser('${user.ID}')" title="Editar">✏️</button>
+                            <button class="btn btn-warning btn-small" onclick="resetPassword('${user.ID}')" title="Reset Senha">🔑</button>
+                            <button class="btn btn-danger btn-small" onclick="toggleUserStatus('${user.ID}')" title="${user.Status === 'Ativo' ? 'Desativar' : 'Ativar'}">${user.Status === 'Ativo' ? '🚫' : '✅'}</button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        function updateStatistics() {
+            const total = allUsers.length;
+            const active = allUsers.filter(u => u.Status === 'Ativo').length;
+            const admins = allUsers.filter(u => u.Função === 'ADMIN').length;
+            
+            // Último login mais recente
+            const lastLogins = allUsers.filter(u => u['Último Acesso']).map(u => new Date(u['Último Acesso']));
+            const mostRecent = lastLogins.length > 0 ? Math.max(...lastLogins) : null;
+            const lastLoginText = mostRecent ? formatDate(new Date(mostRecent)) : 'Nunca';
+            
+            document.getElementById('totalUsers').textContent = total;
+            document.getElementById('activeUsers').textContent = active;
+            document.getElementById('adminUsers').textContent = admins;
+            document.getElementById('lastLogin').textContent = lastLoginText;
+        }
+        
+        function filterUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const funcaoFilter = document.getElementById('filterFuncao').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+            
+            filteredUsers = allUsers.filter(user => {
+                // Filtro de busca
+                if (searchTerm && !user['Nome Completo'].toLowerCase().includes(searchTerm) && 
+                    !user.Email.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+                
+                // Filtro de função
+                if (funcaoFilter && user.Função !== funcaoFilter) {
+                    return false;
+                }
+                
+                // Filtro de status
+                if (statusFilter && user.Status !== statusFilter) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            renderUsersTable();
+        }
+        
+        function openNewUserModal() {
+            document.getElementById('userModal').style.display = 'flex';
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('modalTitle').textContent = '➕ Novo Usuário';
+            
+            // Limpar permissões
+            availablePermissions.forEach(permission => {
+                document.getElementById('perm_' + permission.key).checked = false;
+            });
+        }
+        
+        function editUser(userId) {
+            const user = allUsers.find(u => u.ID === userId);
+            if (!user) return;
+            
+            document.getElementById('userModal').style.display = 'flex';
+            document.getElementById('modalTitle').textContent = '✏️ Editar Usuário';
+            
+            // Preencher formulário
+            document.getElementById('userId').value = user.ID;
+            document.getElementById('userName').value = user['Nome Completo'];
+            document.getElementById('userEmail').value = user.Email;
+            document.getElementById('userFuncao').value = user.Função;
+            document.getElementById('userUnidade').value = user.Unidade;
+            document.getElementById('userStatus').value = user.Status;
+            
+            // Por enquanto, usar permissões padrão da função
+            updatePermissions();
+        }
+        
+        function updatePermissions() {
+            const funcao = document.getElementById('userFuncao').value;
+            const permissions = defaultPermissions[funcao] || [];
+            
+            // Limpar todas as permissões
+            availablePermissions.forEach(permission => {
+                document.getElementById('perm_' + permission.key).checked = false;
+            });
+            
+            // Marcar permissões da função
+            permissions.forEach(permission => {
+                const checkbox = document.getElementById('perm_' + permission);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+        
+        function setupEventListeners() {
+            document.getElementById('userForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveUser();
+            });
+            
+            // Fechar modal ao clicar fora
+            document.getElementById('userModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal('userModal');
+                }
+            });
+            
+            document.getElementById('confirmModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal('confirmModal');
+                }
+            });
+        }
+        
+        function saveUser() {
+            const userData = {
+                id: document.getElementById('userId').value,
+                nome: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                funcao: document.getElementById('userFuncao').value,
+                unidade: document.getElementById('userUnidade').value,
+                status: document.getElementById('userStatus').value
+            };
+            
+            // Coletar permissões selecionadas
+            const selectedPermissions = [];
+            availablePermissions.forEach(permission => {
+                if (document.getElementById('perm_' + permission.key).checked) {
+                    selectedPermissions.push(permission.key);
+                }
+            });
+            userData.permissions = selectedPermissions;
+            
+            // Validações
+            if (!userData.nome || !userData.email || !userData.funcao || !userData.unidade) {
+                showError('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+            
+            // Salvar usuário
+            const action = userData.id ? 'updateUser' : 'createUser';
+            
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    if (result.success) {
+                        showNotification('✅ Usuário salvo com sucesso!');
+                        closeModal('userModal');
+                        loadUsers(); // Recarregar lista
+                    } else {
+                        showError('❌ Erro ao salvar usuário: ' + result.error);
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showError('❌ Erro ao salvar usuário: ' + error.message);
+                })
+                [action](userData);
+        }
+        
+        function toggleUserStatus(userId) {
+            const user = allUsers.find(u => u.ID === userId);
+            if (!user) return;
+            
+            const newStatus = user.Status === 'Ativo' ? 'Inativo' : 'Ativo';
+            const action = newStatus === 'Ativo' ? 'ativar' : 'desativar';
+            
+            showConfirmation(
+                `Tem certeza que deseja ${action} o usuário "${user['Nome Completo']}"?`,
+                function() {
+                    google.script.run
+                        .withSuccessHandler(function(success) {
+                            if (success) {
+                                showNotification(`✅ Usuário ${action === 'ativar' ? 'ativado' : 'desativado'} com sucesso!`);
+                                loadUsers();
+                            } else {
+                                showError('❌ Erro ao alterar status do usuário');
+                            }
+                        })
+                        .withFailureHandler(function(error) {
+                            showError('❌ Erro: ' + error.message);
+                        })
+                        .updateUserStatus(userId, newStatus);
+                }
+            );
+        }
+        
+        function resetPassword(userId) {
+            const user = allUsers.find(u => u.ID === userId);
+            if (!user) return;
+            
+            showConfirmation(
+                `Tem certeza que deseja resetar a senha do usuário "${user['Nome Completo']}"?\n\nUma nova senha temporária será enviada por email.`,
+                function() {
+                    // Implementar reset de senha
+                    showNotification('🚧 Funcionalidade de reset de senha será implementada em breve.');
+                }
+            );
+        }
+        
+        function refreshUsers() {
+            loadUsers();
+            showNotification('🔄 Lista de usuários atualizada');
+        }
+        
+        function exportUsers() {
+            showNotification('🚧 Funcionalidade de exportação será implementada em breve.');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function showConfirmation(message, callback) {
+            document.getElementById('confirmMessage').textContent = message;
+            document.getElementById('confirmButton').onclick = function() {
+                callback();
+                closeModal('confirmModal');
+            };
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('usersTableContainer').style.display = show ? 'none' : 'block';
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'Nunca';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+        }
+        
+        function closePage() {
+            google.script.host.close();
+        }
+        
+        function showError(message) {
+            alert('❌ ' + message);
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 1rem;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 3000;
+                max-width: 300px;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
