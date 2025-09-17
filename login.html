@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema CRM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            background: #f8f9ff;
+            border: 2px solid #e1e8ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .user-email {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .user-email strong {
+            color: #333;
+        }
+        
+        .access-status {
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        
+        .access-granted {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .access-denied {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .access-pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .help-text {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .contact-admin {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .contact-admin:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🔐</div>
+        <h1 class="title">Sistema CRM</h1>
+        
+        <div class="user-info">
+            <div class="user-email">
+                <strong>Usuário:</strong> <span id="userEmail">Carregando...</span>
+            </div>
+            <div class="access-status access-pending" id="accessStatus">
+                ⏳ Verificando permissões...
+            </div>
+        </div>
+        
+        <div id="loginButtons">
+            <button class="btn btn-primary" onclick="checkAccess()" id="accessBtn">
+                🚀 Acessar Sistema
+            </button>
+            <button class="btn btn-secondary" onclick="refreshUser()">
+                🔄 Atualizar Usuário
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Verificando acesso...</p>
+        </div>
+        
+        <div class="help-text">
+            <strong>💡 Como funciona:</strong><br>
+            • O sistema utiliza sua conta Google para autenticação<br>
+            • Apenas usuários cadastrados podem acessar<br>
+            • Se não conseguir acessar, <a href="#" class="contact-admin" onclick="requestAccess()">solicite acesso ao administrador</a>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        
+        window.onload = function() {
+            loadCurrentUser();
+        };
+        
+        function loadCurrentUser() {
+            document.getElementById('userEmail').textContent = 'Carregando...';
+            
+            google.script.run
+                .withSuccessHandler(function(user) {
+                    if (user && user.email) {
+                        currentUser = user;
+                        document.getElementById('userEmail').textContent = user.email;
+                        
+                        // Verificar se usuário existe no sistema
+                        checkUserExists();
+                    } else {
+                        showError('Não foi possível obter informações do usuário');
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showError('Erro ao carregar usuário: ' + error.message);
+                })
+                .getCurrentUser();
+        }
+        
+        function checkUserExists() {
+            google.script.run
+                .withSuccessHandler(function(userData) {
+                    const statusEl = document.getElementById('accessStatus');
+                    const accessBtn = document.getElementById('accessBtn');
+                    
+                    if (userData) {
+                        statusEl.className = 'access-status access-granted';
+                        statusEl.innerHTML = '✅ Acesso autorizado<br><small>Função: ' + userData.funcao + ' | Unidade: ' + userData.unidade + '</small>';
+                        accessBtn.disabled = false;
+                        accessBtn.onclick = function() { enterSystem(); };
+                    } else {
+                        statusEl.className = 'access-status access-denied';
+                        statusEl.innerHTML = '❌ Usuário não cadastrado no sistema<br><small>Solicite acesso ao administrador</small>';
+                        accessBtn.disabled = true;
+                        accessBtn.textContent = '🚫 Acesso Negado';
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    showError('Erro ao verificar usuário: ' + error.message);
+                })
+                .getUserByEmail(currentUser.email);
+        }
+        
+        function checkAccess() {
+            if (!currentUser) {
+                loadCurrentUser();
+                return;
+            }
+            
+            const statusEl = document.getElementById('accessStatus');
+            if (statusEl.classList.contains('access-granted')) {
+                enterSystem();
+            } else {
+                checkUserExists();
+            }
+        }
+        
+        function enterSystem() {
+            showLoading(true);
+            
+            google.script.run
+                .withSuccessHandler(function() {
+                    showLoading(false);
+                    
+                    // Fechar modal de login
+                    google.script.host.close();
+                    
+                    // Abrir dashboard
+                    setTimeout(function() {
+                        google.script.run.openDashboard();
+                    }, 500);
+                })
+                .withFailureHandler(function(error) {
+                    showLoading(false);
+                    showError('Erro ao acessar sistema: ' + error.message);
+                })
+                .logUserAction(currentUser.email, 'LOGIN_ATTEMPT', 'Tentativa de login');
+        }
+        
+        function refreshUser() {
+            showLoading(true);
+            setTimeout(function() {
+                loadCurrentUser();
+                showLoading(false);
+            }, 1000);
+        }
+        
+        function requestAccess() {
+            const message = `Olá! Gostaria de solicitar acesso ao Sistema CRM.
+            
+Informações:
+- Email: ${currentUser ? currentUser.email : 'Não disponível'}
+- Função desejada: [Informar: Administrador, Gerente ou Assistente]
+- Unidade: [Informar a unidade]
+
+Por favor, configure meu acesso no sistema.
+
+Obrigado!`;
+            
+            const subject = 'Solicitação de Acesso - Sistema CRM';
+            const mailto = `mailto:admin@empresa.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+            
+            // Abrir cliente de email
+            window.open(mailto);
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('loginButtons').style.display = show ? 'none' : 'block';
+        }
+        
+        function showError(message) {
+            const statusEl = document.getElementById('accessStatus');
+            statusEl.className = 'access-status access-denied';
+            statusEl.innerHTML = '❌ ' + message;
+            
+            showLoading(false);
+        }
+        
+        // Adicionar efeitos visuais
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                if (!this.disabled) {
+                    this.style.transform = 'translateY(0)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
