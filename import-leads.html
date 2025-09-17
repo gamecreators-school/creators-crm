@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar Leads - Sistema CRM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            background: rgba(255,255,255,0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .container {
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .step {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        
+        .step-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 1.5rem;
+            border-bottom: 2px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .step-title {
+            flex: 1;
+        }
+        
+        .step-title h3 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+        
+        .step-title p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .step-content {
+            padding: 2rem;
+        }
+        
+        .template-section {
+            background: linear-gradient(135deg, #e8f4fd 0%, #c3e9ff 100%);
+            border: 2px solid #b3d9ff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .template-section h4 {
+            color: #0066cc;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .template-format {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #fafafa;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .upload-area:hover .upload-icon {
+            transform: scale(1.1);
+        }
+        
+        .upload-text {
+            font-size: 1.3rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .upload-subtext {
+            color: #999;
+            font-size: 1rem;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .file-info {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border: 2px solid #4caf50;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .file-info-item {
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .file-info-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .file-info strong {
+            color: #2e7d2e;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .mapping-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .mapping-row {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .mapping-row:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .mapping-row label {
+            width: 120px;
+            margin: 0;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+        
+        .mapping-row select {
+            flex: 1;
+            margin-left: 1rem;
+        }
+        
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .preview-table th,
+        .preview-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .preview-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .preview-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .progress-container {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1rem 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 12px;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .result-section {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .result-section.active {
+            display: block;
+        }
+        
+        .result-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: bounce 1s ease-out;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40%, 43% {
+                transform: translateY(-20px);
+            }
+            70% {
+                transform: translateY(-10px);
+            }
+            90% {
+                transform: translateY(-4px);
+            }
+        }
+        
+        .result-icon.success {
+            color: #28a745;
+        }
+        
+        .result-icon.error {
+            color: #dc3545;
+        }
+        
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .error-list {
+            text-align: left;
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .error-list h4 {
+            color: #856404;
+            margin-bottom: 1rem;
+        }
+        
+        .error-list ul {
+            margin-left: 1rem;
+        }
+        
+        .error-list li {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .mapping-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📥 Importar Leads</h1>
+        <div class="header-controls">
+            <div class="user-info">
+                <?= user.nome ?> | <?= user.funcao ?> | <?= user.unidade ?>
+            </div>
+            <button class="btn btn-secondary" onclick="closePage()">🏠 Voltar</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Passo 1: Formato e Upload -->
+        <div class="step active" id="step1">
+            <div class="step-header">
+                <div class="step-number">1</div>
+                <div class="step-title">
+                    <h3>Preparar Arquivo</h3>
+                    <p>Formato esperado e upload do arquivo</p>
+                </div>
+            </div>
+            
+            <div class="step-content">
+                <!-- Template de Exemplo -->
+                <div class="template-section">
+                    <h4>📋 Formato Esperado do Arquivo</h4>
+                    <p>Seu arquivo deve conter as seguintes colunas (em qualquer ordem):</p>
+                    <div class="template-format">
+Nome, Telefone, Email, Idade, Cidade, Curso Interesse, Observações
+João Silva, (11) 99999-9999, joao@email.com, 25, São Paulo, Programação, Interessado em curso completo
+Maria Santos, (11) 88888-8888, maria@email.com, 30, São Paulo, Design, Quer começar em breve
+Pedro Costa, (11) 77777-7777, pedro@email.com, 28, São Paulo, Marketing, Procura curso online
+                    </div>
+                    <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">
+                        <strong>Obrigatórios:</strong> Nome e Telefone | 
+                        <strong>Opcionais:</strong> Email, Idade, Cidade, Curso Interesse, Observações
+                    </p>
+                </div>
+                
+                <!-- Upload Area -->
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Clique aqui ou arraste seu arquivo</div>
+                    <div class="upload-subtext">Suporta CSV e Excel (.xlsx, .xls) - Máximo 5MB</div>
+                </div>
+                
+                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(event)">
+                
+                <div id="fileInfo" class="file-info">
+                    <div class="file-info-item"><strong>Arquivo:</strong> <span id="fileName"></span></div>
+                    <div class="file-info-item"><strong>Tamanho:</strong> <span id="fileSize"></span></div>
+                    <div class="file-info-item"><strong>Tipo:</strong> <span id="fileType"></span></div>
+                    <div class="file-info-item"><strong>Registros:</strong> <span id="recordCount"></span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Passo 2: Configurações -->
+        <div class="step" id="step2">
+            <div class="step-header">
+                <div class="step-number">2</div>
+                <div class="step-title">
+                    <h3>Configurações de Importação</h3>
+                    <p>Definir unidade, responsável e status padrão</p>
+                </div>
+            </div>
+            
+            <div class="step-content">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                    <div class="form-group">
+                        <label for="unidadeSelect">Unidade de Destino:</label>
+                        <select id="unidadeSelect" required>
+                            <option value="">Selecione a unidade</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="responsavelSelect">Responsável Padrão:</label>
+                        <select id="responsavelSelect">
+                            <option value="">Distribuir automaticamente</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="statusSelect">Status Inicial:</label>
+                        <select id="statusSelect">
+                            <option value="Novo">Novo</option>
+                            <option value="Em contato">Em contato</option>
+                            <option value="Agendado">Agendado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tagInput">Tags (opcional):</label>
+                        <input type="text" id="tagInput" placeholder="Ex: campanha-2024, facebook-ads">
+                        <small style="color: #666; font-size: 0.8rem;">Separadas por vírgula</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Passo 3: Mapeamento de Colunas -->
+        <div class="step" id="step3" style="display: none;">
+            <div class="step-header">
+                <div class="step-number">3</div>
+                <div class="step-title">
+                    <h3>Mapeamento de Colunas</h3>
+                    <p>Relacionar as colunas do arquivo com os campos do sistema</p>
+                </div>
+            </div>
+            
+            <div class="step-content">
+                <p style="margin-bottom: 1.5rem; color: #666;">
+                    Relacione as colunas do seu arquivo com os campos do sistema:
+                </p>
+                
+                <div class="mapping-container" id="mappingContainer">
+                    <!-- Será preenchido dinamicamente -->
+                </div>
+                
+                <div id="previewContainer" style="margin-top: 2rem;">
+                    <h4 style="margin-bottom: 1rem; color: #333;">Prévia dos Dados (primeiras 5 linhas):</h4>
+                    <div style="max-height: 400px; overflow: auto;">
+                        <table class="preview-table" id="previewTable">
+                            <!-- Será preenchido dinamicamente -->
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Passo 4: Importação -->
+        <div class="step" id="step4" style="display: none;">
+            <div class="step-header">
+                <div class="step-number">4</div>
+                <div class="step-title">
+                    <h3>Importação</h3>
+                    <p>Processamento e resultado da importação</p>
+                </div>
+            </div>
+            
+            <div class="step-content">
+                <div class="progress-container" id="progressContainer">
+                    <p style="font-size: 1.2rem; margin-bottom: 1rem;">Importando leads...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p id="progressText">Preparando importação...</p>
+                </div>
+                
+                <div class="result-section" id="resultSection">
+                    <div class="result-icon" id="resultIcon">⏳</div>
+                    <h3 id="resultTitle">Pronto para Importar</h3>
+                    <p id="resultMessage">Revise as configurações e clique em "Iniciar Importação"</p>
+                    
+                    <div class="result-stats" id="resultStats" style="display: none;">
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalProcessed">0</div>
+                            <div class="stat-label">Processados</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalSuccess">0</div>
+                            <div class="stat-label">Sucesso</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalErrors">0</div>
+                            <div class="stat-label">Erros</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="totalDuplicates">0</div>
+                            <div class="stat-label">Duplicados</div>
+                        </div>
+                    </div>
+                    
+                    <div class="error-list" id="errorList" style="display: none;">
+                        <!-- Erros serão listados aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Botões de Navegação -->
+        <div class="navigation-buttons">
+            <button class="btn btn-secondary" id="prevBtn" onclick="prevStep()" disabled>
+                ← Anterior
+            </button>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-primary" id="nextBtn" onclick="nextStep()" disabled>
+                    Próximo →
+                </button>
+                <button class="btn btn-success" id="importBtn" onclick="startImport()" style="display: none;">
+                    🚀 Iniciar Importação
+                </button>
+                <button class="btn btn-primary" id="finishBtn" onclick="closePage()" style="display: none;">
+                    ✅ Finalizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const currentUser = <?= JSON.stringify(user) ?>;
+        const unidades = <?= JSON.stringify(unidades) ?>;
+        const responsaveis = <?= JSON.stringify(responsaveis) ?>;
+        
+        let currentStep = 1;
+        let fileData = null;
+        let parsedData = [];
+        let columnMapping = {};
+        
+        const systemFields = [
+            { key: 'nome', label: 'Nome', required: true },
+            { key: 'telefone', label: 'Telefone', required: true },
+            { key: 'email', label: 'Email', required: false },
+            { key: 'idade', label: 'Idade', required: false },
+            { key: 'cidade', label: 'Cidade', required: false },
+            { key: 'curso', label: 'Curso de Interesse', required: false },
+            { key: 'observacoes', label: 'Observações', required: false }
+        ];
+        
+        window.onload = function() {
+            initializePage();
+            setupDragAndDrop();
+        };
+        
+        function initializePage() {
+            // Carregar unidades
+            const unidadeSelect = document.getElementById('unidadeSelect');
+            unidades.forEach(unidade => {
+                const option = new Option(unidade, unidade);
+                unidadeSelect.add(option);
+            });
+            
+            // Pré-selecionar unidade se não for admin
+            if (currentUser.funcao !== 'ADMIN') {
+                unidadeSelect.value = currentUser.unidade;
+                unidadeSelect.disabled = true;
+            }
+            
+            // Carregar responsáveis
+            const responsavelSelect = document.getElementById('responsavelSelect');
+            responsaveis.forEach(responsavel => {
+                const option = new Option(responsavel, responsavel);
+                responsavelSelect.add(option);
+            });
+        }
+        
+        function setupDragAndDrop() {
+            const uploadArea = document.getElementById('uploadArea');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+
+            uploadArea.addEventListener('drop', handleDrop, false);
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            function highlight() {
+                uploadArea.classList.add('dragover');
+            }
+
+            function unhighlight() {
+                uploadArea.classList.remove('dragover');
+            }
+
+            function handleDrop(e) {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    document.getElementById('fileInput').files = files;
+                    handleFileSelect({ target: { files: files } });
+                }
+            }
+        }
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validar tamanho
+            if (file.size > 5 * 1024 * 1024) {
+                showError('Arquivo muito grande! O tamanho máximo é 5MB.');
+                return;
+            }
+
+            fileData = file;
+            
+            // Mostrar informações
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileType').textContent = getFileTypeDescription(file);
+            document.getElementById('fileInfo').style.display = 'block';
+            
+            // Processar arquivo
+            processFile(file);
+        }
+        
+        function processFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const data = e.target.result;
+                    
+                    if (file.name.endsWith('.csv')) {
+                        parsedData = parseCSV(data);
+                    } else {
+                        showError('Formato de arquivo não suportado ainda. Use CSV por enquanto.');
+                        return;
+                    }
+                    
+                    if (parsedData.length > 0) {
+                        document.getElementById('recordCount').textContent = parsedData.length + ' registros';
+                        document.getElementById('nextBtn').disabled = false;
+                        showNotification('✅ Arquivo processado com sucesso!');
+                    } else {
+                        showError('Nenhum dado válido encontrado no arquivo.');
+                    }
+                } catch (error) {
+                    showError('Erro ao processar arquivo: ' + error.message);
+                }
+            };
+            
+            reader.readAsText(file, 'UTF-8');
+        }
+        
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            // Detectar separador
+            const separators = [',', ';', '\t', '|'];
+            let separator = ',';
+            let maxColumns = 0;
+            
+            for (let sep of separators) {
+                const columns = lines[0].split(sep).length;
+                if (columns > maxColumns) {
+                    maxColumns = columns;
+                    separator = sep;
+                }
+            }
+            
+            const headers = lines[0].split(separator).map(h => h.trim().replace(/['"]/g, ''));
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
+                
+                const values = lines[i].split(separator);
+                if (values.length >= 2) {
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] ? values[index].trim().replace(/['"]/g, '') : '';
+                    });
+                    data.push(row);
+                }
+            }
+            
+            return data;
+        }
+        
+        function nextStep() {
+            if (currentStep < 4) {
+                // Validações específicas
+                if (currentStep === 1 && !fileData) {
+                    showError('Por favor, selecione um arquivo primeiro.');
+                    return;
+                }
+                
+                if (currentStep === 2) {
+                    const unidade = document.getElementById('unidadeSelect').value;
+                    if (!unidade) {
+                        showError('Por favor, selecione uma unidade.');
+                        return;
+                    }
+                }
+                
+                if (currentStep === 2) {
+                    setupColumnMapping();
+                }
+                
+                currentStep++;
+                updateStepUI();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepUI();
+            }
+        }
+        
+        function updateStepUI() {
+            // Mostrar apenas o passo atual
+            for (let i = 1; i <= 4; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.style.display = i === currentStep ? 'block' : 'none';
+                
+                if (i === currentStep) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            }
+            
+            // Atualizar botões
+            document.getElementById('prevBtn').disabled = currentStep === 1;
+            
+            if (currentStep === 4) {
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('importBtn').style.display = 'inline-flex';
+            } else {
+                document.getElementById('nextBtn').style.display = 'inline-flex';
+                document.getElementById('importBtn').style.display = 'none';
+            }
+            
+            document.getElementById('finishBtn').style.display = 'none';
+        }
+        
+        function setupColumnMapping() {
+            const fileColumns = Object.keys(parsedData[0]);
+            const mappingContainer = document.getElementById('mappingContainer');
+            mappingContainer.innerHTML = '';
+            
+            systemFields.forEach(field => {
+                const row = document.createElement('div');
+                row.className = 'mapping-row';
+                
+                const label = document.createElement('label');
+                label.textContent = field.label + (field.required ? ' *' : '');
+                if (field.required) {
+                    label.style.color = '#dc3545';
+                    label.style.fontWeight = 'bold';
+                }
+                
+                const select = document.createElement('select');
+                select.id = `mapping_${field.key}`;
+                
+                const emptyOption = new Option('-- Não mapear --', '');
+                select.add(emptyOption);
+                
+                fileColumns.forEach(col => {
+                    const option = new Option(col, col);
+                    
+                    // Auto-seleção inteligente
+                    const colLower = col.toLowerCase();
+                    const fieldKey = field.key.toLowerCase();
+                    
+                    if (
+                        (fieldKey === 'nome' && colLower.includes('nome')) ||
+                        (fieldKey === 'telefone' && (colLower.includes('telefone') || colLower.includes('phone'))) ||
+                        (fieldKey === 'email' && colLower.includes('email')) ||
+                        (fieldKey === 'idade' && colLower.includes('idade')) ||
+                        (fieldKey === 'cidade' && colLower.includes('cidade')) ||
+                        (fieldKey === 'curso' && colLower.includes('curso')) ||
+                        (fieldKey === 'observacoes' && (colLower.includes('obs') || colLower.includes('comentario')))
+                    ) {
+                        option.selected = true;
+                    }
+                    
+                    select.add(option);
+                });
+                
+                select.onchange = updatePreview;
+                
+                row.appendChild(label);
+                row.appendChild(select);
+                mappingContainer.appendChild(row);
+            });
+            
+            updatePreview();
+        }
+        
+        function updatePreview() {
+            columnMapping = {};
+            systemFields.forEach(field => {
+                const select = document.getElementById(`mapping_${field.key}`);
+                if (select && select.value) {
+                    columnMapping[field.key] = select.value;
+                }
+            });
+            
+            // Verificar campos obrigatórios
+            const hasNome = columnMapping.nome;
+            const hasTelefone = columnMapping.telefone;
+            
+            const previewTable = document.getElementById('previewTable');
+            previewTable.innerHTML = '';
+            
+            if (hasNome || hasTelefone) {
+                // Cabeçalho
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                
+                systemFields.forEach(field => {
+                    if (columnMapping[field.key]) {
+                        const th = document.createElement('th');
+                        th.textContent = field.label;
+                        headerRow.appendChild(th);
+                    }
+                });
+                
+                thead.appendChild(headerRow);
+                previewTable.appendChild(thead);
+                
+                // Dados
+                const tbody = document.createElement('tbody');
+                const previewData = parsedData.slice(0, 5);
+                
+                previewData.forEach(row => {
+                    const tr = document.createElement('tr');
+                    
+                    systemFields.forEach(field => {
+                        if (columnMapping[field.key]) {
+                            const td = document.createElement('td');
+                            const value = row[columnMapping[field.key]] || '';
+                            td.textContent = value.length > 30 ? value.substring(0, 30) + '...' : value;
+                            tr.appendChild(td);
+                        }
+                    });
+                    
+                    tbody.appendChild(tr);
+                });
+                
+                previewTable.appendChild(tbody);
+            }
+            
+            // Habilitar próximo passo se campos obrigatórios estiverem mapeados
+            if (currentStep === 3) {
+                document.getElementById('nextBtn').disabled = !hasNome || !hasTelefone;
+            }
+        }
+        
+        function startImport() {
+            const unidade = document.getElementById('unidadeSelect').value;
+            const responsavel = document.getElementById('responsavelSelect').value;
+            const status = document.getElementById('statusSelect').value;
+            const tags = document.getElementById('tagInput').value;
+            
+            if (!unidade) {
+                showError('Selecione uma unidade antes de importar.');
+                return;
+            }
+            
+            if (!columnMapping.nome || !columnMapping.telefone) {
+                showError('Os campos Nome e Telefone são obrigatórios.');
+                return;
+            }
+            
+            // Preparar dados
+            const leadsToImport = parsedData.map((row, index) => {
+                const lead = {
+                    nome: row[columnMapping.nome] || '',
+                    telefone: row[columnMapping.telefone] || '',
+                    email: row[columnMapping.email] || '',
+                    idade: row[columnMapping.idade] || '',
+                    cidade: row[columnMapping.cidade] || '',
+                    curso: row[columnMapping.curso] || '',
+                    observacoes: row[columnMapping.observacoes] || '',
+                    unidade: unidade,
+                    responsavel: responsavel,
+                    status: status,
+                    tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+                    linha: index + 2
+                };
+                
+                return lead;
+            }).filter(lead => lead.nome && lead.telefone);
+            
+            if (leadsToImport.length === 0) {
+                showError('Nenhum lead válido para importar.');
+                return;
+            }
+            
+            // Iniciar importação
+            document.getElementById('progressContainer').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('importBtn').disabled = true;
+            
+            importLeads(leadsToImport);
+        }
+        
+        function importLeads(leads) {
+            let processed = 0;
+            const batchSize = 10;
+            
+            function processBatch(startIndex) {
+                const batch = leads.slice(startIndex, startIndex + batchSize);
+                
+                google.script.run
+                    .withSuccessHandler(function(result) {
+                        processed += batch.length;
+                        
+                        const progress = (processed / leads.length) * 100;
+                        document.getElementById('progressFill').style.width = progress + '%';
+                        document.getElementById('progressText').textContent = `${processed}/${leads.length} leads processados (${Math.round(progress)}%)`;
+                        
+                        if (startIndex + batchSize < leads.length) {
+                            setTimeout(() => processBatch(startIndex + batchSize), 1000);
+                        } else {
+                            finishImport(result);
+                        }
+                    })
+                    .withFailureHandler(function(error) {
+                        showError('Erro na importação: ' + error.message);
+                        document.getElementById('progressContainer').style.display = 'none';
+                        document.getElementById('importBtn').disabled = false;
+                    })
+                    .importLeadsBatch(batch, currentUser.email);
+            }
+            
+            processBatch(0);
+        }
+        
+        function finishImport(result) {
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('resultSection').classList.add('active');
+            
+            const success = result.success || 0;
+            const errors = result.errors || [];
+            const total = parsedData.length;
+            
+            // Atualizar estatísticas
+            document.getElementById('totalProcessed').textContent = total;
+            document.getElementById('totalSuccess').textContent = success;
+            document.getElementById('totalErrors').textContent = errors.length;
+            document.getElementById('totalDuplicates').textContent = total - success - errors.length;
+            document.getElementById('resultStats').style.display = 'grid';
+            
+            // Atualizar resultado
+            const resultIcon = document.getElementById('resultIcon');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultMessage = document.getElementById('resultMessage');
+            
+            if (errors.length === 0) {
+                resultIcon.textContent = '✅';
+                resultIcon.className = 'result-icon success';
+                resultTitle.textContent = 'Importação Concluída!';
+                resultMessage.textContent = `${success} leads foram importados com sucesso.`;
+            } else if (success > 0) {
+                resultIcon.textContent = '⚠️';
+                resultIcon.className = 'result-icon warning';
+                resultTitle.textContent = 'Importação Parcial';
+                resultMessage.textContent = `${success} leads importados, ${errors.length} com erro.`;
+            } else {
+                resultIcon.textContent = '❌';
+                resultIcon.className = 'result-icon error';
+                resultTitle.textContent = 'Falha na Importação';
+                resultMessage.textContent = 'Nenhum lead foi importado devido a erros.';
+            }
+            
+            // Mostrar erros
+            if (errors.length > 0) {
+                const errorList = document.getElementById('errorList');
+                errorList.innerHTML = `
+                    <h4>Erros Encontrados (${errors.length}):</h4>
+                    <ul>
+                        ${errors.slice(0, 10).map(error => `<li>${error}</li>`).join('')}
+                        ${errors.length > 10 ? `<li><em>... e mais ${errors.length - 10} erros</em></li>` : ''}
+                    </ul>
+                `;
+                errorList.style.display = 'block';
+            }
+            
+            document.getElementById('importBtn').style.display = 'none';
+            document.getElementById('finishBtn').style.display = 'inline-flex';
+        }
+        
+        function getFileTypeDescription(file) {
+            const extension = file.name.split('.').pop().toLowerCase();
+            switch(extension) {
+                case 'csv': return 'CSV (Comma Separated Values)';
+                case 'xlsx': return 'Excel (Office Open XML)';
+                case 'xls': return 'Excel (Legacy Format)';
+                default: return file.type || 'Desconhecido';
+            }
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function closePage() {
+            google.script.host.close();
+        }
+        
+        function showError(message) {
+            alert('❌ ' + message);
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 1rem;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 3000;
+                max-width: 300px;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
