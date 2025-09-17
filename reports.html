@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - Sistema CRM</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.8rem;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            background: rgba(255,255,255,0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .controls-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+        
+        select, input {
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .report-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+        
+        .report-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        
+        .report-icon {
+            font-size: 2.5rem;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .report-title {
+            flex: 1;
+        }
+        
+        .report-title h3 {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+        
+        .report-title p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .metric {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .metric-number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+        
+        .metric-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 200px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .report-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+        
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .summary-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .summary-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .summary-stat {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .summary-stat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .summary-stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-stat-label {
+            font-size: 0.9rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .summary-stat-change {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+        
+        .summary-stat-change.positive {
+            color: #28a745;
+        }
+        
+        .summary-stat-change.negative {
+            color: #dc3545;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f8f9ff;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .action-buttons {
+                justify-content: stretch;
+            }
+            
+            .action-buttons .btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Relatórios CRM</h1>
+        <div class="header-controls">
+            <div class="user-info">
+                <?= user.nome ?> | <?= user.funcao ?> | <?= user.unidade ?>
+            </div>
+            <button class="btn btn-secondary" onclick="closePage()">🏠 Voltar</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Painel de Controles -->
+        <div class="controls-panel">
+            <h2 style="margin-bottom: 1.5rem; color: #333;">🎛️ Filtros e Configurações</h2>
+            
+            <div class="controls-grid">
+                <div class="control-group">
+                    <label>📍 Unidade:</label>
+                    <select id="filterUnidade">
+                        <option value="">Todas as unidades</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>👤 Responsável:</label>
+                    <select id="filterResponsavel">
+                        <option value="">Todos os responsáveis</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>📅 Data Início:</label>
+                    <input type="date" id="dataInicio">
+                </div>
+                
+                <div class="control-group">
+                    <label>📅 Data Fim:</label>
+                    <input type="date" id="dataFim">
+                </div>
+                
+                <div class="control-group">
+                    <label>📊 Período:</label>
+                    <select id="periodo">
+                        <option value="hoje">Hoje</option>
+                        <option value="semana">Esta semana</option>
+                        <option value="mes" selected>Este mês</option>
+                        <option value="trimestre">Este trimestre</option>
+                        <option value="ano">Este ano</option>
+                        <option value="personalizado">Personalizado</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>📈 Tipo de Relatório:</label>
+                    <select id="tipoRelatorio">
+                        <option value="geral">Relatório Geral</option>
+                        <option value="conversao">Funil de Conversão</option>
+                        <option value="performance">Performance por Usuário</option>
+                        <option value="origem">Leads por Origem</option>
+                        <option value="temporal">Análise Temporal</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="generateReport()">📊 Gerar Relatório</button>
+                <button class="btn btn-success" onclick="exportToPDF()">📄 Exportar PDF</button>
+                <button class="btn btn-info" onclick="exportToExcel()">📊 Exportar Excel</button>
+                <button class="btn btn-secondary" onclick="resetFilters()">🔄 Limpar Filtros</button>
+            </div>
+        </div>
+        
+        <!-- Resumo Executivo -->
+        <div class="summary-panel" id="summaryPanel">
+            <div class="summary-header">
+                <h2>📈 Resumo Executivo</h2>
+                <span id="periodText" style="color: #666; font-size: 0.9rem;">Este mês</span>
+            </div>
+            
+            <div class="summary-stats">
+                <div class="summary-stat">
+                    <div class="summary-stat-number" id="totalLeadsSum">-</div>
+                    <div class="summary-stat-label">Total de Leads</div>
+                    <div class="summary-stat-change positive" id="leadsChange">+0%</div>
+                </div>
+                
+                <div class="summary-stat">
+                    <div class="summary-stat-number" id="contatosRealizados">-</div>
+                    <div class="summary-stat-label">Contatos Realizados</div>
+                    <div class="summary-stat-change positive" id="contatosChange">+0%</div>
+                </div>
+                
+                <div class="summary-stat">
+                    <div class="summary-stat-number" id="agendamentosSum">-</div>
+                    <div class="summary-stat-label">Agendamentos</div>
+                    <div class="summary-stat-change positive" id="agendamentosChange">+0%</div>
+                </div>
+                
+                <div class="summary-stat">
+                    <div class="summary-stat-number" id="comparecimentosSum">-</div>
+                    <div class="summary-stat-label">Comparecimentos</div>
+                    <div class="summary-stat-change positive" id="comparecimentosChange">+0%</div>
+                </div>
+                
+                <div class="summary-stat">
+                    <div class="summary-stat-number" id="matriculasSum">-</div>
+                    <div class="summary-stat-label">Matrículas</div>
+                    <div class="summary-stat-change positive" id="matriculasChange">+0%</div>
+                </div>
+                
+                <div class="summary-stat">
+                    <div class="summary-stat-number" id="taxaConversaoSum">-%</div>
+                    <div class="summary-stat-label">Taxa de Conversão</div>
+                    <div class="summary-stat-change positive" id="conversaoChange">+0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Gerando relatório...</p>
+        </div>
+        
+        <!-- Relatórios -->
+        <div class="reports-grid" id="reportsContainer">
+            <!-- Será preenchido dinamicamente -->
+        </div>
+    </div>
+
+    <script>
+        const currentUser = <?= JSON.stringify(user) ?>;
+        let allLeads = [];
+        let allAgendamentos = [];
+        let currentFilters = {};
+        
+        window.onload = function() {
+            initializePage();
+            loadData();
+            setupEventListeners();
+        };
+        
+        function initializePage() {
+            // Definir datas padrão (último mês)
+            const hoje = new Date();
+            const primeiroDia = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            
+            document.getElementById('dataInicio').value = primeiroDia.toISOString().split('T')[0];
+            document.getElementById('dataFim').value = hoje.toISOString().split('T')[0];
+            
+            // Carregar opções de filtros
+            loadFilterOptions();
+        }
+        
+        function loadFilterOptions() {
+            // Carregar unidades
+            google.script.run
+                .withSuccessHandler(function(unidades) {
+                    const select = document.getElementById('filterUnidade');
+                    unidades.forEach(unidade => {
+                        const option = new Option(unidade, unidade);
+                        select.add(option);
+                    });
+                    
+                    // Pré-selecionar unidade se não for admin
+                    if (currentUser.funcao !== 'ADMIN') {
+                        select.value = currentUser.unidade;
+                        select.disabled = true;
+                    }
+                })
+                .getUnidades();
+                
+            // Carregar responsáveis
+            google.script.run
+                .withSuccessHandler(function(responsaveis) {
+                    const select = document.getElementById('filterResponsavel');
+                    responsaveis.forEach(responsavel => {
+                        const option = new Option(responsavel, responsavel);
+                        select.add(option);
+                    });
+                })
+                .getResponsaveis();
+        }
+        
+        function loadData() {
+            showLoading(true);
+            
+            // Carregar leads
+            google.script.run
+                .withSuccessHandler(function(leads) {
+                    allLeads = leads || [];
+                    
+                    // Carregar agendamentos
+                    google.script.run
+                        .withSuccessHandler(function(agendamentos) {
+                            allAgendamentos = agendamentos || [];
+                            generateReport();
+                            showLoading(false);
+                        })
+                        .withFailureHandler(function(error) {
+                            console.error('Erro ao carregar agendamentos:', error);
+                            allAgendamentos = [];
+                            generateReport();
+                            showLoading(false);
+                        })
+                        .getAgendamentos();
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Erro ao carregar leads:', error);
+                    showLoading(false);
+                    showError('Erro ao carregar dados: ' + error.message);
+                })
+                .getLeads();
+        }
+        
+        function setupEventListeners() {
+            document.getElementById('periodo').addEventListener('change', function() {
+                const periodo = this.value;
+                if (periodo !== 'personalizado') {
+                    setDatesByPeriod(periodo);
+                }
+            });
+        }
+        
+        function setDatesByPeriod(periodo) {
+            const hoje = new Date();
+            let dataInicio, dataFim;
+            
+            switch(periodo) {
+                case 'hoje':
+                    dataInicio = dataFim = hoje;
+                    break;
+                case 'semana':
+                    dataInicio = new Date(hoje);
+                    dataInicio.setDate(hoje.getDate() - hoje.getDay());
+                    dataFim = hoje;
+                    break;
+                case 'mes':
+                    dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+                    dataFim = hoje;
+                    break;
+                case 'trimestre':
+                    const trimestre = Math.floor(hoje.getMonth() / 3);
+                    dataInicio = new Date(hoje.getFullYear(), trimestre * 3, 1);
+                    dataFim = hoje;
+                    break;
+                case 'ano':
+                    dataInicio = new Date(hoje.getFullYear(), 0, 1);
+                    dataFim = hoje;
+                    break;
+            }
+            
+            if (dataInicio && dataFim) {
+                document.getElementById('dataInicio').value = dataInicio.toISOString().split('T')[0];
+                document.getElementById('dataFim').value = dataFim.toISOString().split('T')[0];
+            }
+        }
+        
+        function generateReport() {
+            showLoading(true);
+            
+            // Obter filtros
+            currentFilters = {
+                unidade: document.getElementById('filterUnidade').value,
+                responsavel: document.getElementById('filterResponsavel').value,
+                dataInicio: new Date(document.getElementById('dataInicio').value),
+                dataFim: new Date(document.getElementById('dataFim').value),
+                periodo: document.getElementById('periodo').value,
+                tipo: document.getElementById('tipoRelatorio').value
+            };
+            
+            // Filtrar dados
+            const filteredLeads = filterData(allLeads, currentFilters);
+            const filteredAgendamentos = filterData(allAgendamentos, currentFilters);
+            
+            // Gerar relatório baseado no tipo
+            switch(currentFilters.tipo) {
+                case 'geral':
+                    generateGeneralReport(filteredLeads, filteredAgendamentos);
+                    break;
+                case 'conversao':
+                    generateConversionReport(filteredLeads);
+                    break;
+                case 'performance':
+                    generatePerformanceReport(filteredLeads);
+                    break;
+                case 'origem':
+                    generateOriginReport(filteredLeads);
+                    break;
+                case 'temporal':
+                    generateTemporalReport(filteredLeads);
+                    break;
+            }
+            
+            updateSummary(filteredLeads, filteredAgendamentos);
+            showLoading(false);
+        }
+        
+        function filterData(data, filters) {
+            return data.filter(item => {
+                // Filtro de unidade
+                if (filters.unidade && item.Unidade !== filters.unidade) return false;
+                
+                // Filtro de responsável
+                if (filters.responsavel && item.Responsável !== filters.responsavel) return false;
+                
+                // Filtro de data
+                const itemDate = new Date(item['Data Cadastro'] || item['Data Criação']);
+                if (itemDate < filters.dataInicio || itemDate > filters.dataFim) return false;
+                
+                return true;
+            });
+        }
+        
+        function generateGeneralReport(leads, agendamentos) {
+            const container = document.getElementById('reportsContainer');
+            
+            // Leads por Status
+            const leadsByStatus = groupBy(leads, 'Status');
+            const statusChart = createStatusChart(leadsByStatus);
+            
+            // Performance por Unidade
+            const leadsByUnidade = groupBy(leads, 'Unidade');
+            const unidadeChart = createUnidadeChart(leadsByUnidade);
+            
+            // Funil de Conversão
+            const funnelData = createFunnelData(leads);
+            const funnelChart = createFunnelChart(funnelData);
+            
+            container.innerHTML = statusChart + unidadeChart + funnelChart;
+        }
+        
+        function generateConversionReport(leads) {
+            const container = document.getElementById('reportsContainer');
+            
+            const funnelSteps = [
+                { status: 'Novo', count: leads.filter(l => l.Status === 'Novo').length },
+                { status: 'Em contato', count: leads.filter(l => l.Status === 'Em contato').length },
+                { status: 'Agendado', count: leads.filter(l => l.Status === 'Agendado').length },
+                { status: 'Compareceu', count: leads.filter(l => l.Status === 'Compareceu').length },
+                { status: 'Matrícula', count: leads.filter(l => l.Status === 'Matrícula').length }
+            ];
+            
+            let html = `
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-icon">🔄</div>
+                        <div class="report-title">
+                            <h3>Funil de Conversão</h3>
+                            <p>Análise detalhada do processo de conversão</p>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+            `;
+            
+            let previousCount = funnelSteps[0].count || 1;
+            
+            funnelSteps.forEach((step, index) => {
+                const percentage = previousCount > 0 ? Math.round((step.count / previousCount) * 100) : 0;
+                const totalPercentage = funnelSteps[0].count > 0 ? Math.round((step.count / funnelSteps[0].count) * 100) : 0;
+                
+                html += `
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong>${step.status}</strong>
+                            <span>${step.count} leads (${totalPercentage}%)</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${totalPercentage}%"></div>
+                        </div>
+                        ${index > 0 ? `<small style="color: #666;">Taxa de conversão da etapa anterior: ${percentage}%</small>` : ''}
+                    </div>
+                `;
+                
+                previousCount = step.count;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function generatePerformanceReport(leads) {
+            const container = document.getElementById('reportsContainer');
+            const leadsByResponsavel = groupBy(leads, 'Responsável');
+            
+            let html = `
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-icon">👤</div>
+                        <div class="report-title">
+                            <h3>Performance por Responsável</h3>
+                            <p>Análise de performance individual</p>
+                        </div>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Responsável</th>
+                                <th>Total Leads</th>
+                                <th>Agendados</th>
+                                <th>Matrículas</th>
+                                <th>Taxa Conversão</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.entries(leadsByResponsavel).forEach(([responsavel, leads]) => {
+                const total = leads.length;
+                const agendados = leads.filter(l => l.Status === 'Agendado').length;
+                const matriculas = leads.filter(l => l.Status === 'Matrícula').length;
+                const taxa = total > 0 ? Math.round((matriculas / total) * 100) : 0;
+                
+                html += `
+                    <tr>
+                        <td><strong>${responsavel || 'Não atribuído'}</strong></td>
+                        <td>${total}</td>
+                        <td>${agendados}</td>
+                        <td>${matriculas}</td>
+                        <td>${taxa}%</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function generateOriginReport(leads) {
+            const container = document.getElementById('reportsContainer');
+            const leadsByOrigem = groupBy(leads, 'Origem');
+            
+            let html = `
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-icon">📍</div>
+                        <div class="report-title">
+                            <h3>Leads por Origem</h3>
+                            <p>Análise de canais de aquisição</p>
+                        </div>
+                    </div>
+                    
+                    <div class="metrics-grid">
+            `;
+            
+            Object.entries(leadsByOrigem).forEach(([origem, leads]) => {
+                html += `
+                    <div class="metric">
+                        <div class="metric-number">${leads.length}</div>
+                        <div class="metric-label">${origem || 'Não informado'}</div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function generateTemporalReport(leads) {
+            const container = document.getElementById('reportsContainer');
+            
+            // Agrupar por data
+            const leadsByDate = {};
+            leads.forEach(lead => {
+                const date = new Date(lead['Data Cadastro']).toISOString().split('T')[0];
+                leadsByDate[date] = (leadsByDate[date] || 0) + 1;
+            });
+            
+            let html = `
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-icon">📅</div>
+                        <div class="report-title">
+                            <h3>Análise Temporal</h3>
+                            <p>Distribuição de leads ao longo do tempo</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <p>Gráfico temporal será implementado</p>
+                        <small>Dados disponíveis para ${Object.keys(leadsByDate).length} dias</small>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Quantidade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            Object.entries(leadsByDate)
+                .sort((a, b) => new Date(b[0]) - new Date(a[0]))
+                .slice(0, 10)
+                .forEach(([date, count]) => {
+                    html += `
+                        <tr>
+                            <td>${new Date(date).toLocaleDateString('pt-BR')}</td>
+                            <td>${count}</td>
+                        </tr>
+                    `;
+                });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+        
+        function updateSummary(leads, agendamentos) {
+            const total = leads.length;
+            const contatos = leads.filter(l => ['Em contato', 'Agendado', 'Compareceu', 'Matrícula'].includes(l.Status)).length;
+            const agendados = leads.filter(l => l.Status === 'Agendado').length;
+            const compareceram = leads.filter(l => l.Status === 'Compareceu').length;
+            const matriculas = leads.filter(l => l.Status === 'Matrícula').length;
+            const taxa = total > 0 ? Math.round((matriculas / total) * 100) : 0;
+            
+            document.getElementById('totalLeadsSum').textContent = total;
+            document.getElementById('contatosRealizados').textContent = contatos;
+            document.getElementById('agendamentosSum').textContent = agendados;
+            document.getElementById('comparecimentosSum').textContent = compareceram;
+            document.getElementById('matriculasSum').textContent = matriculas;
+            document.getElementById('taxaConversaoSum').textContent = taxa + '%';
+            
+            // Atualizar texto do período
+            const periodo = document.getElementById('periodo').value;
+            const periodoText = {
+                'hoje': 'Hoje',
+                'semana': 'Esta semana',
+                'mes': 'Este mês',
+                'trimestre': 'Este trimestre',
+                'ano': 'Este ano',
+                'personalizado': 'Período personalizado'
+            };
+            document.getElementById('periodText').textContent = periodoText[periodo];
+        }
+        
+        function createStatusChart(leadsByStatus) {
+            let html = `
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-icon">📊</div>
+                        <div class="report-title">
+                            <h3>Leads por Status</h3>
+                            <p>Distribuição atual dos leads</p>
+                        </div>
+                    </div>
+                    
+                    <div class="metrics-grid">
+            `;
+            
+            Object.entries(leadsByStatus).forEach(([status, leads]) => {
+                html += `
+                    <div class="metric">
+                        <div class="metric-number">${leads.length}</div>
+                        <div class="metric-label">${status}</div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        function createUnidadeChart(leadsByUnidade) {
+            let html = `
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-icon">🏢</div>
+                        <div class="report-title">
+                            <h3>Performance por Unidade</h3>
+                            <p>Comparativo entre unidades</p>
+                        </div>
+                    </div>
+                    
+                    <div class="metrics-grid">
+            `;
+            
+            Object.entries(leadsByUnidade).forEach(([unidade, leads]) => {
+                const matriculas = leads.filter(l => l.Status === 'Matrícula').length;
+                const taxa = leads.length > 0 ? Math.round((matriculas / leads.length) * 100) : 0;
+                
+                html += `
+                    <div class="metric">
+                        <div class="metric-number">${leads.length}</div>
+                        <div class="metric-label">${unidade}</div>
+                        <div style="font-size: 0.8rem; color: #666; margin-top: 0.25rem;">
+                            ${matriculas} matrículas (${taxa}%)
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        function createFunnelChart(funnelData) {
+            return `
+                <div class="report-card">
+                    <div class="report-header">
+                        <div class="report-icon">🔄</div>
+                        <div class="report-title">
+                            <h3>Funil Resumido</h3>
+                            <p>Visão geral do processo</p>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <p>Funil de conversão visual será implementado</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function groupBy(array, key) {
+            return array.reduce((result, item) => {
+                const group = item[key] || 'Não informado';
+                if (!result[group]) {
+                    result[group] = [];
+                }
+                result[group].push(item);
+                return result;
+            }, {});
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('reportsContainer').style.display = show ? 'none' : 'grid';
+            document.getElementById('summaryPanel').style.opacity = show ? '0.5' : '1';
+        }
+        
+        function resetFilters() {
+            document.getElementById('filterUnidade').value = '';
+            document.getElementById('filterResponsavel').value = '';
+            document.getElementById('periodo').value = 'mes';
+            document.getElementById('tipoRelatorio').value = 'geral';
+            
+            setDatesByPeriod('mes');
+            generateReport();
+        }
+        
+        function exportToPDF() {
+            showNotification('🚧 Exportação em PDF será implementada em breve.');
+        }
+        
+        function exportToExcel() {
+            showNotification('🚧 Exportação em Excel será implementada em breve.');
+        }
+        
+        function closePage() {
+            google.script.host.close();
+        }
+        
+        function showError(message) {
+            alert('❌ ' + message);
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 1rem;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 3000;
+                max-width: 300px;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
